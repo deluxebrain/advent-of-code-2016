@@ -1,0 +1,25 @@
+{
+  "name": "no-time-for-a-taxicab",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha --reporter nyan --recursive",
+    "watch": "npm test -- --watch"
+  },
+  "pre-commit": "npm test",
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "chai": "^3.5.0",
+    "gulp": "^3.9.1",
+    "gulp-mocha": "^3.0.1",
+    "gulp-util": "^3.0.7",
+    "matches": "^0.5.1",
+    "mocha": "^3.2.0",
+    "watch": "^1.0.1"
+  },
+  "dependencies": {
+    "lodash": "^4.17.2"
+  }
+}
