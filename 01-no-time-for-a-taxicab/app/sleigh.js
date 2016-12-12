@@ -16,17 +16,29 @@ const parseMap = pattern({
 
 const moveMap = pattern({
   '0, position, distance': ([x, y], distance) => {
-    return [0, x, y + distance];
+    return _.chain(_.range(distance))
+      .map(step => [0, x, y + step + 1])
+      .reverse()
+      .value();
   },
   '90, position, distance': ([x, y], distance) => {
-    return [90, x + distance, y];
+    return _.chain(_.range(distance))
+      .map(step => [90, x + step + 1, y])
+      .reverse()
+      .value();
   },
   '180, position, distance': ([x, y], distance) => {
-    return [180, x, y - distance];
+    return _.chain(_.range(distance))
+      .map(step => [180, x, y - step - 1])
+      .reverse()
+      .value();
   },
   '270, position, distance': ([x, y], distance) => {
-    return [270, x - distance, y];
-  },
+    return _.chain(_.range(distance))
+      .map(step => [270, x - step - 1, y])
+      .reverse()
+      .value();
+  }
 });
 
 const executeMap = pattern({
@@ -37,16 +49,18 @@ const executeMap = pattern({
     return executeMap(commands, [origin]);
   },
   '[head, ...tail], [head, ...tail]': ([rotate, move], commands, current_position, visited) => {
-    if (!_.chain(visited)
-      .map((position) => _.slice(position, 1))
-      .find((position) => _.isEqual(_.slice(current_position, 1), position))
-      .isEmpty()
-      .value()) return current_position;
+    const movements = moveMap(calcuateHeading(current_position, rotate), _.slice(current_position, 1), move);
+    const history = _.concat([current_position], visited);
+
+    var intersection = _.chain(movements)
+      .intersectionWith(history, (a, b) => _.isEqual(_.slice(a, 1), _.slice(b, 1)))
+      .value();
+    if (!_.isEmpty(intersection)) {
+      return intersection[0];
+    }
 
     return executeMap(commands,
-      _.concat([moveMap(
-        calcuateHeading(current_position, rotate),
-        _.slice(current_position, 1), move)], [current_position], visited));
+      _.concat(movements, history));
   }
 });
 
