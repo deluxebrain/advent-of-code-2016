@@ -30,17 +30,23 @@ const moveMap = pattern({
 });
 
 const executeMap = pattern({
-  '[], position': (position) => {
-    return position;
+  '[], [head, ...tail]': (head) => {
+    return head;
   },
   'commands': (commands) => {
-    return executeMap(commands, origin);
+    return executeMap(commands, [origin]);
   },
-  '[head, ...tail], position': ([rotate, move], tail, position) => {
-    return executeMap(tail,
-      moveMap(calcuateHeading(position, rotate),
-        _.slice(position, 1),
-        move));
+  '[head, ...tail], [head, ...tail]': ([rotate, move], commands, current_position, visited) => {
+    if (!_.chain(visited)
+      .map((position) => _.slice(position, 1))
+      .find((position) => _.isEqual(_.slice(current_position, 1), position))
+      .isEmpty()
+      .value()) return current_position;
+
+    return executeMap(commands,
+      _.concat([moveMap(
+        calcuateHeading(current_position, rotate),
+        _.slice(current_position, 1), move)], [current_position], visited));
   }
 });
 
