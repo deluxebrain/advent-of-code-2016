@@ -15,25 +15,25 @@ const parseMap = pattern({
 });
 
 const moveMap = pattern({
-  '0, position, distance': ([x, y], distance) => {
+  '0, position, distance': function([x, y], distance) {
     return _.chain(_.range(distance))
       .map(step => [0, x, y + step + 1])
       .reverse()
       .value();
   },
-  '90, position, distance': ([x, y], distance) => {
+  '90, position, distance': function([x, y], distance) {
     return _.chain(_.range(distance))
       .map(step => [90, x + step + 1, y])
       .reverse()
       .value();
   },
-  '180, position, distance': ([x, y], distance) => {
+  '180, position, distance': function([x, y], distance) {
     return _.chain(_.range(distance))
       .map(step => [180, x, y - step - 1])
       .reverse()
       .value();
   },
-  '270, position, distance': ([x, y], distance) => {
+  '270, position, distance': function([x, y], distance) {
     return _.chain(_.range(distance))
       .map(step => [270, x - step - 1, y])
       .reverse()
@@ -48,19 +48,18 @@ const executeMap = pattern({
   'commands': (commands) => {
     return executeMap(commands, [origin]);
   },
-  '[head, ...tail], [head, ...tail]': ([rotate, move], commands, current_position, visited) => {
-    const movements = moveMap(calcuateHeading(current_position, rotate), _.slice(current_position, 1), move);
-    const history = _.concat([current_position], visited);
+  '[head, ...tail], positions': ([rotate, move], commands, positions) => {
 
-    var intersection = _.chain(movements)
-      .intersectionWith(history, (a, b) => _.isEqual(_.slice(a, 1), _.slice(b, 1)))
+    const movements = moveMap(calcuateHeading(_.head(positions), rotate), _.slice(_.head(positions), 1), move);
+
+    var done = _.chain(movements)
+      .intersectionWith(positions, (a, b) => _.isEqual(_.slice(a, 1), _.slice(b, 1)))
+      .head()
       .value();
-    if (!_.isEmpty(intersection)) {
-      return intersection[0];
-    }
+    if (!_.isEmpty(done)) return done;
 
     return executeMap(commands,
-      _.concat(movements, history));
+      _.concat(movements, positions));
   }
 });
 
